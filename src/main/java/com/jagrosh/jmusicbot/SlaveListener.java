@@ -25,7 +25,7 @@ public class SlaveListener extends ListenerAdapter {
 
     private boolean isMasterBot(String botId) {
         // Logic to check if the message is from the master bot
-        return botId.equals("OTgzNzg3MjcxNzU1MDE4MjUw.GYdg2v.x0y8y7-oGAOPEs1u-ixQwIt2_8kbkt0nXrn5Jc");  // Replace with actual master bot ID
+        return botId.equals("TOKEN1");  // Replace with actual master bot ID
     }
 
     private void handlePlayCommand(String command, MessageReceivedEvent event) {
