@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.dv8tion.jda.api.entities.Guild;
 import org.json.JSONException;
@@ -32,13 +33,15 @@ import org.slf4j.LoggerFactory;
 /**
  * @author John Grosh (john.a.grosh@gmail.com)
  */
+
+
 public class SettingsManager implements GuildSettingsManager<Settings> {
     private final static Logger LOG = LoggerFactory.getLogger("Settings");
     private final static String SETTINGS_FILE = "serversettings.json";
-    private final HashMap<Long, Settings> settings;
+    private final ConcurrentHashMap<Long, Settings> settings;
 
     public SettingsManager() {
-        this.settings = new HashMap<>();
+        this.settings = new ConcurrentHashMap<>();
 
         try {
             JSONObject loadedSettings = new JSONObject(new String(Files.readAllBytes(OtherUtil.getPath(SETTINGS_FILE))));
@@ -48,7 +51,6 @@ public class SettingsManager implements GuildSettingsManager<Settings> {
                 // Legacy version support: On versions 0.3.3 and older, the repeat mode was represented as a boolean.
                 if (!o.has("repeat_mode") && o.has("repeat") && o.getBoolean("repeat"))
                     o.put("repeat_mode", RepeatMode.ALL);
-
 
                 settings.put(Long.parseLong(id), new Settings(this,
                         o.has("text_channel_id") ? o.getString("text_channel_id") : null,
@@ -62,14 +64,13 @@ public class SettingsManager implements GuildSettingsManager<Settings> {
                         o.has("queue_type") ? o.getEnum(QueueType.class, "queue_type") : QueueType.FAIR));
             });
         } catch (NoSuchFileException e) {
-            // create an empty json file
+            // Create an empty json file
             try {
                 LOG.info("serversettings.json will be created in " + OtherUtil.getPath("serversettings.json").toAbsolutePath());
                 Files.write(OtherUtil.getPath("serversettings.json"), new JSONObject().toString(4).getBytes());
             } catch (IOException ex) {
                 LOG.warn("Failed to create new settings file: " + ex);
             }
-            return;
         } catch (IOException | JSONException e) {
             LOG.warn("Failed to load server settings: " + e);
         }
@@ -77,12 +78,6 @@ public class SettingsManager implements GuildSettingsManager<Settings> {
         LOG.info("serversettings.json loaded from " + OtherUtil.getPath("serversettings.json").toAbsolutePath());
     }
 
-    /**
-     * Gets non-null settings for a Guild
-     *
-     * @param guild the guild to get settings for
-     * @return the existing settings, or new settings for that guild
-     */
     @Override
     public Settings getSettings(Guild guild) {
         return getSettings(guild.getIdLong());
@@ -96,8 +91,7 @@ public class SettingsManager implements GuildSettingsManager<Settings> {
         return new Settings(this, 0, 0, 0, 100, null, RepeatMode.OFF, null, -1, QueueType.FAIR);
     }
 
-    protected synchronized void writeSettings()
-    {
+    protected synchronized void writeSettings() {
         JSONObject obj = new JSONObject();
         settings.keySet().forEach(key -> {
             JSONObject o = new JSONObject();
@@ -128,5 +122,4 @@ public class SettingsManager implements GuildSettingsManager<Settings> {
             LOG.warn("Failed to write to file: " + ex);
         }
     }
-
 }

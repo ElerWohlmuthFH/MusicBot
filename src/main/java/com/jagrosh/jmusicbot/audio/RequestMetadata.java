@@ -18,6 +18,7 @@ package com.jagrosh.jmusicbot.audio;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jmusicbot.utils.TimeUtil;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -31,16 +32,26 @@ import java.util.regex.Pattern;
 public class RequestMetadata
 {
     public static final RequestMetadata EMPTY = new RequestMetadata(null, null);
-    
+
     public final UserInfo user;
     public final RequestInfo requestInfo;
-    
+
+
+    public static RequestMetadata fromMessageReceivedEvent(AudioTrack track, MessageReceivedEvent event) {
+        return new RequestMetadata(event.getAuthor(), new RequestMetadata.RequestInfo(event.getMessage().getContentRaw(), track.getInfo().uri));
+    }
+
+    public static RequestMetadata fromCommandEvent(AudioTrack track, CommandEvent event) {
+        return new RequestMetadata(event.getAuthor(), new RequestMetadata.RequestInfo(event.getArgs(), track.getInfo().uri));
+    }
+
+
     public RequestMetadata(User user, RequestInfo requestInfo)
     {
         this.user = user == null ? null : new UserInfo(user.getIdLong(), user.getName(), user.getDiscriminator(), user.getEffectiveAvatarUrl());
         this.requestInfo = requestInfo;
     }
-    
+
     public long getOwner()
     {
         return user == null ? 0L : user.id;
@@ -48,6 +59,10 @@ public class RequestMetadata
 
     public static RequestMetadata fromResultHandler(AudioTrack track, MessageReceivedEvent event) {
         return new RequestMetadata(event.getAuthor(), new RequestInfo(event.getMessage().getContentRaw(), track.getInfo().uri));
+    }
+
+    public static RequestMetadata fromMessage(Message message, String uri) {
+        return new RequestMetadata(message.getAuthor(), new RequestInfo(message.getContentRaw(), uri));
     }
 
 
@@ -75,12 +90,12 @@ public class RequestMetadata
             return matcher.find() ? TimeUtil.parseUnitTime(matcher.group(1)) : 0;
         }
     }
-    
+
     public static class UserInfo
     {
         public final long id;
         public final String username, discrim, avatar;
-        
+
         private UserInfo(long id, String username, String discrim, String avatar)
         {
             this.id = id;

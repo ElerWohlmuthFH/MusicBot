@@ -26,7 +26,10 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 
 /**
- * @author John Grosh <john.a.grosh@gmail.com>
+ * Abstract class for music commands that ensures bots are properly set up and
+ * that users are in the appropriate channels to execute music-related commands.
+ *
+ * @author John Grosh
  */
 public abstract class MusicCommand extends Command {
     protected final Bot bot;
@@ -51,15 +54,23 @@ public abstract class MusicCommand extends Command {
             event.replyInDm(event.getClient().getError() + " You can only use that command in " + tchannel.getAsMention() + "!");
             return;
         }
-        bot.getPlayerManager().setUpHandler(event.getGuild()); // no point constantly checking for this later
+
+        // Initialize or retrieve the AudioHandler for the guild
+        bot.getPlayerManager().createAudioHandler(event.getGuild());  // No point constantly checking for this later
+
+        // If the command requires music to be playing and no music is playing, return an error
         if (bePlaying && !((AudioHandler) event.getGuild().getAudioManager().getSendingHandler()).isMusicPlaying(event.getJDA())) {
             event.reply(event.getClient().getError() + " There must be music playing to use that!");
             return;
         }
+
+        // If the command requires the user to be listening in a voice channel
         if (beListening) {
             VoiceChannel current = event.getGuild().getSelfMember().getVoiceState().getChannel();
-            if (current == null)
+            if (current == null) {
                 current = settings.getVoiceChannel(event.getGuild());
+            }
+
             GuildVoiceState userState = event.getMember().getVoiceState();
             if (!userState.inVoiceChannel() || userState.isDeafened() || (current != null && !userState.getChannel().equals(current))) {
                 event.replyError("You must be listening in " + (current == null ? "a voice channel" : current.getAsMention()) + " to use that!");
@@ -72,6 +83,7 @@ public abstract class MusicCommand extends Command {
                 return;
             }
 
+            // If the bot is not connected to a voice channel, attempt to connect
             if (!event.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
                 try {
                     event.getGuild().getAudioManager().openAudioConnection(userState.getChannel());
@@ -82,7 +94,7 @@ public abstract class MusicCommand extends Command {
             }
         }
 
-        doCommand(event);
+        doCommand(event);  // Execute the specific music command logic
     }
 
     public abstract void doCommand(CommandEvent event);

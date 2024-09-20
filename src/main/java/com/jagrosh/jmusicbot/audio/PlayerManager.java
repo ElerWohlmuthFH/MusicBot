@@ -33,18 +33,20 @@ import dev.lavalink.youtube.YoutubeAudioSourceManager;
 import net.dv8tion.jda.api.entities.Guild;
 
 /**
+ * PlayerManager class responsible for managing audio players and registering
+ * audio sources for the bot.
  *
- * @author John Grosh (john.a.grosh@gmail.com)
+ * @author John Grosh
  */
 public class PlayerManager extends DefaultAudioPlayerManager
 {
     private final Bot bot;
-    
+
     public PlayerManager(Bot bot)
     {
         this.bot = bot;
     }
-    
+
     public void init()
     {
         TransformativeAudioSourceManager.createTransforms(bot.getConfig().getTransforms()).forEach(t -> registerSourceManager(t));
@@ -66,21 +68,28 @@ public class PlayerManager extends DefaultAudioPlayerManager
 
         DuncteBotSources.registerAll(this, "en-US");
     }
-    
+
     public Bot getBot()
     {
         return bot;
     }
-    
+
     public boolean hasHandler(Guild guild)
     {
         return guild.getAudioManager().getSendingHandler()!=null;
     }
-    
-    public AudioHandler setUpHandler(Guild guild)
+
+    /**
+     * Sets up the AudioHandler for the given guild, ensuring that the AudioHandler
+     * and AudioPlayer are properly initialized.
+     *
+     * @param guild the Guild for which the AudioHandler is being set up
+     * @return the initialized AudioHandler for the guild
+     */
+    public AudioHandler createAudioHandler(Guild guild)
     {
         AudioHandler handler;
-        if(guild.getAudioManager().getSendingHandler()==null)
+        if(guild.getAudioManager().getSendingHandler() == null)
         {
             AudioPlayer player = createPlayer();
             player.setVolume(bot.getSettingsManager().getSettings(guild).getVolume());
@@ -89,7 +98,9 @@ public class PlayerManager extends DefaultAudioPlayerManager
             guild.getAudioManager().setSendingHandler(handler);
         }
         else
+        {
             handler = (AudioHandler) guild.getAudioManager().getSendingHandler();
+        }
         return handler;
     }
 }

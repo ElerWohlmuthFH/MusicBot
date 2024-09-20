@@ -41,10 +41,10 @@ public class SlaveListener extends ListenerAdapter {
             return;
         }
 
-        if (!event.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
-            event.getGuild().getAudioManager().openAudioConnection(userVoiceChannel);
-            event.getChannel().sendMessage("Slave bot is joining your voice channel and playing the song...").queue();
-        }
+//        if (!event.getGuild().getSelfMember().getVoiceState().inVoiceChannel()) {
+//            event.getGuild().getAudioManager().openAudioConnection(userVoiceChannel);
+//            event.getChannel().sendMessage("Slave bot is joining your voice channel and playing the song...").queue();
+//        }
 
         // Load and play the song using the bot's audio player
         // You can use Lavaplayer or any other music playing library to load and play the track

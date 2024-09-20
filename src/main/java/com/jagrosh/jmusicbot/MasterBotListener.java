@@ -1,10 +1,11 @@
 package com.jagrosh.jmusicbot;
 
-import com.jagrosh.jmusicbot.Bot;
+import com.jagrosh.jmusicbot.audio.AudioHandler;
 import com.jagrosh.jmusicbot.commands.SlavePlayCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -38,8 +39,12 @@ public class MasterBotListener extends ListenerAdapter {
         }
     }
 
-
-
+    /**
+     * Select a slave bot that is not already in a voice channel in the current guild.
+     *
+     * @param guild the guild where the play command is being requested
+     * @return a selected slave bot or null if none are available
+     */
     private Bot selectSlaveBot(Guild guild) {
         // Filter out bots that are already in a voice channel
         List<Bot> availableSlaveBots = slaveBots.stream()
@@ -67,8 +72,12 @@ public class MasterBotListener extends ListenerAdapter {
         return selectedSlaveBot;
     }
 
-
-
+    /**
+     * Instruct the selected slave bot to play the music in the current guild.
+     *
+     * @param slaveBot the selected slave bot
+     * @param event the event that triggered the command
+     */
     private void instructSlaveToPlay(Bot slaveBot, MessageReceivedEvent event) {
         Guild guild = slaveBot.getJDA().getGuildById(event.getGuild().getId());
         if (guild == null) {
@@ -76,19 +85,35 @@ public class MasterBotListener extends ListenerAdapter {
             return;
         }
 
-        // Use the slave bot to execute the play command logic
-        TextChannel textChannel = guild.getTextChannelById(event.getChannel().getId());
-        if (textChannel != null) {
-            textChannel.sendMessage("Slave bot is executing the play command...").queue();
+        // Ensure the AudioHandler is set up for the slave bot in the guild
+        AudioHandler handler = slaveBot.getPlayerManager().createAudioHandler(guild);
+        if (handler == null) {
+            event.getChannel().sendMessage("Error: AudioHandler is not initialized.").queue();
+            System.out.println("Error: AudioHandler is null.");
+            return;
+        }
 
-            // Now log the slave bot selection to verify which one is selected
+        // Check if the user is in a voice channel, and connect the slave bot to it
+        Member member = event.getMember();
+        if (member != null && member.getVoiceState() != null && member.getVoiceState().inVoiceChannel()) {
+            VoiceChannel voiceChannel = member.getVoiceState().getChannel();
+            if (!guild.getAudioManager().isConnected()) {
+                // Open audio connection for the slave bot
+                guild.getAudioManager().openAudioConnection(voiceChannel);
+                event.getChannel().sendMessage("Slave bot joining voice channel to play the track...").queue();
+            }
+
+            // Now log the slave bot selection to verify
             System.out.println("Selected Slave Bot: " + slaveBot.getJDA().getSelfUser().getName());
 
             // Call the SlavePlayCommand directly
-            SlavePlayCommand slavePlayCommand = new SlavePlayCommand(slaveBot, slaveBot.getJDA(), guild, textChannel);
-            slavePlayCommand.execute(event);  // Execute the play logic in the selected slave bot
+            SlavePlayCommand slavePlayCommand = new SlavePlayCommand(slaveBot, guild, event.getTextChannel());
+            slavePlayCommand.execute(event);  // Execute the play logic using the selected slave bot
+        } else {
+            event.getChannel().sendMessage("You need to be in a voice channel for the slave bot to play music!").queue();
         }
     }
+
 
 
 }
