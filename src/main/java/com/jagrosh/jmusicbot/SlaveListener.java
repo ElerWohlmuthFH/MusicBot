@@ -1,5 +1,6 @@
 package com.jagrosh.jmusicbot;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -25,7 +26,8 @@ public class SlaveListener extends ListenerAdapter {
 
     private boolean isMasterBot(String botId) {
         // Logic to check if the message is from the master bot
-        return botId.equals("TOKEN1");  // Replace with actual master bot ID
+        Dotenv dotenv = Dotenv.load();
+        return botId.equals(dotenv.get("DISCORD_MASTER_TOKEN"));  // Replace with actual master bot ID
     }
 
     private void handlePlayCommand(String command, MessageReceivedEvent event) {
