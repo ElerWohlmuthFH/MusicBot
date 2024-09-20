@@ -4,7 +4,6 @@ import com.jagrosh.jmusicbot.audio.AudioHandler;
 import com.jagrosh.jmusicbot.commands.SlavePlayCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -29,23 +28,17 @@ public class MasterBotListener extends ListenerAdapter {
             event.getChannel().sendMessage("Master bot received the play command. Selecting a slave to handle it...").queue();
 
             // Select a slave bot that is not already in a voice channel
-            Bot selectedSlaveBot = selectSlaveBot(guild);
-            if (selectedSlaveBot != null) {
+            Bot availableSlave = findAvailableSlave(guild);
+            if (availableSlave != null) {
                 // Forward the command to the selected slave bot for execution
-                instructSlaveToPlay(selectedSlaveBot, event);
+                instructSlaveToPlay(availableSlave, event);
             } else {
                 event.getChannel().sendMessage("No available slave bots to handle the command.").queue();
             }
         }
     }
 
-    /**
-     * Select a slave bot that is not already in a voice channel in the current guild.
-     *
-     * @param guild the guild where the play command is being requested
-     * @return a selected slave bot or null if none are available
-     */
-    private Bot selectSlaveBot(Guild guild) {
+    private Bot findAvailableSlave(Guild guild) {
         // Filter out bots that are already in a voice channel
         List<Bot> availableSlaveBots = slaveBots.stream()
                 .filter(slaveBot -> {
@@ -72,12 +65,6 @@ public class MasterBotListener extends ListenerAdapter {
         return selectedSlaveBot;
     }
 
-    /**
-     * Instruct the selected slave bot to play the music in the current guild.
-     *
-     * @param slaveBot the selected slave bot
-     * @param event the event that triggered the command
-     */
     private void instructSlaveToPlay(Bot slaveBot, MessageReceivedEvent event) {
         Guild guild = slaveBot.getJDA().getGuildById(event.getGuild().getId());
         if (guild == null) {
