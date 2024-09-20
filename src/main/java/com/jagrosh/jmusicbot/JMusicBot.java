@@ -105,7 +105,7 @@ public class JMusicBot {
                         .setActivity(config.isGameNone() ? null : Activity.playing("loading..."))
                         .setStatus(config.getStatus() == OnlineStatus.INVISIBLE || config.getStatus() == OnlineStatus.OFFLINE
                                 ? OnlineStatus.INVISIBLE : OnlineStatus.DO_NOT_DISTURB)
-                        .addEventListeners(client, waiter, createAppropriateListener(bot, token))
+                        //.addEventListeners(client, waiter, createAppropriateListener(bot, token))
                         .setBulkDeleteSplittingEnabled(true)
                         .build();
 
@@ -142,14 +142,14 @@ public class JMusicBot {
     }
 
     // Create appropriate listener for master or slave bots
-    private static Object createAppropriateListener(Bot bot, String token) {
-        // Assuming the first token is for the master bot
-        if (isMasterBot(token)) {
-            return new MasterListener(bot);  // Master bot listener
-        } else {
-            return new SlaveListener(bot);   // Slave bot listener
-        }
-    }
+//    private static Object createAppropriateListener(Bot bot, String token) {
+//        // Assuming the first token is for the master bot
+//        if (isMasterBot(token)) {
+//            return new MasterListener(bot);  // Master bot listener
+//        } else {
+//            return new SlaveListener(bot);   // Slave bot listener
+//        }
+//    }
 
     // Check if the bot is the master bot based on its token
     private static boolean isMasterBot(String token) {
