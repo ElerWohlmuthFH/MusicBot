@@ -19,6 +19,7 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jmusicbot.utils.TimeUtil;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,11 +46,11 @@ public class RequestMetadata
         return user == null ? 0L : user.id;
     }
 
-    public static RequestMetadata fromResultHandler(AudioTrack track, CommandEvent event)
-    {
-        return new RequestMetadata(event.getAuthor(), new RequestInfo(event.getArgs(), track.getInfo().uri));
+    public static RequestMetadata fromResultHandler(AudioTrack track, MessageReceivedEvent event) {
+        return new RequestMetadata(event.getAuthor(), new RequestInfo(event.getMessage().getContentRaw(), track.getInfo().uri));
     }
-    
+
+
     public static class RequestInfo
     {
         public final String query, url;
