@@ -44,12 +44,24 @@
             <version>4.4.1_353</version>
         </dependency>
 
+
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version> <!-- or the latest version -->
+        </dependency>
+
         <dependency>
             <groupId>com.github.jagrosh</groupId>
             <artifactId>jda-utilities</artifactId>
             <version>master-c16a4b264b-1</version> <!-- Use master or a different available commit -->
         </dependency>
 
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version> <!-- or the latest version -->
+        </dependency>
 
 
         <!-- Music Dependencies -->
